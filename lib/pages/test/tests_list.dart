@@ -10,7 +10,28 @@ class TestsList extends StatelessWidget {
         backgroundColor: Colors.lightGreen,
       ),
       body: Center(
-
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text("Ćmiłów",
+              style: TextStyle(
+                fontFamily: 'AmaticSC',
+                fontSize: 37,
+                fontWeight: FontWeight.bold,
+              ),),
+              Text("Ćmiłów",
+                style: TextStyle(
+                    fontFamily: 'Kalam',
+                    fontSize: 37
+                ),),
+              Text("Ćmiłów",
+                style: TextStyle(
+                    fontFamily: 'PatrickHand',
+                    fontSize: 37
+                ),),
+              Text("Ćmiłów"),
+            ],
+          ),
       ),
       backgroundColor: Colors.blue,
     );

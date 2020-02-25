@@ -1,28 +1,21 @@
-import 'package:orthography_learning_app/models/TestType.dart';
-
 class Test {
   int testId;
   int requiredPoints;
-  TestType testType;
+  String testType;
+  static final columns = ["testId", "requiredPoints", "testType"];
 
-  Test(int testId, int requiredPoints, TestType testType) {
-    this.testId = testId;
-    this.requiredPoints = requiredPoints;
-    this.testType = testType;
-  }
+  Test({this.testId, this.requiredPoints, this.testType});
 
-  Map<String, dynamic> toMap() {
-    return {
-      'testId': testId,
-      'requiredPoints': requiredPoints,
-      'testType': testType,
-    };
-  }
+  factory Test.fromMap(Map<String, dynamic> json) => new Test(
+    testId: json["testId"],
+    requiredPoints: json["requiredPoints"],
+    testType: json["testType"]
+  );
 
-  Test.fromMap(Map<String, dynamic> map) {
-    testId = map['testId'];
-    requiredPoints = map['requiredPoints'];
-    testType = map['testType'];
-  }
+  Map<String, dynamic> toMap() => {
+    'testId': testId,
+    'requiredPoints': requiredPoints,
+    'testType': testType,
+  };
 }
 

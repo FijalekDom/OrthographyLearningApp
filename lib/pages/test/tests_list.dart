@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:orthography_learning_app/models/Test.dart';
+import 'package:orthography_learning_app/services/database.dart';
 
 class TestsList extends StatelessWidget {
   @override
@@ -9,29 +11,24 @@ class TestsList extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
-      body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text("Ćmiłów",
-              style: TextStyle(
-                fontFamily: 'AmaticSC',
-                fontSize: 37,
-                fontWeight: FontWeight.bold,
-              ),),
-              Text("Ćmiłów",
-                style: TextStyle(
-                    fontFamily: 'Kalam',
-                    fontSize: 37
-                ),),
-              Text("Ćmiłów",
-                style: TextStyle(
-                    fontFamily: 'PatrickHand',
-                    fontSize: 37
-                ),),
-              Text("Ćmiłów"),
-            ],
-          ),
+      body: FutureBuilder<List<Test>>(
+        future: DBProvider.db.getAllTests(),
+        builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                Test item = snapshot.data[index];
+                return ListTile(
+                  title: Text(item.requiredPoints.toString()),
+                  leading: Text(item.testId.toString()),
+                );
+              },
+            );
+          } else {
+            return Center(child: CircularProgressIndicator());
+          }
+        },
       ),
       backgroundColor: Colors.blue,
     );

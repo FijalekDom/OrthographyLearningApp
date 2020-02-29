@@ -16,6 +16,7 @@ class DBProvider {
     _database = await initDB();
     return _database;
   }
+
   initDB() async {
     Directory documentsDirectory = await
     getApplicationDocumentsDirectory();
@@ -24,7 +25,7 @@ class DBProvider {
         path, version: 1,
         onOpen: (db) {},
         onCreate: (Database db, int version) async {
-          await db.execute("CREATE TABLE IF NOT EXISTS Users ("
+          await db.execute("CREATE TABLE IF NOT EXISTS User ("
               "userId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
               "name TEXT NOT NULL,"
               "email TEXT NOT NULL,"
@@ -102,12 +103,12 @@ class DBProvider {
     List<Map> results = await db.query(
         "Test", columns: Test.columns,
     );
-    List<Test> products = new List();
+    List<Test> tests = new List();
     results.forEach((result) {
-      Test product = Test.fromMap(result);
-      products.add(product);
+      Test test = Test.fromMap(result);
+      tests.add(test);
     });
-    return products;
+    return tests;
   }
 
 }

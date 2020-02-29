@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => LoginState();
+
+}
+
+class LoginState extends State<Login> {
+
+  String email = '';
+  String password = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,12 +25,12 @@ class Login extends StatelessWidget {
           child: Column(
               children: <Widget>[
                 SizedBox(height: 30.0),
-                Text('Login'),
+                Text('E-mail'),
                 TextFormField(
                   style: new TextStyle(color: Colors.black),
                   decoration: new InputDecoration(fillColor: Colors.black12, filled: true),
                   onChanged: (val) {
-
+                    setState(() => email = val);
                   },
                 ),
                 SizedBox(height: 30.0),
@@ -30,7 +40,7 @@ class Login extends StatelessWidget {
                   decoration: new InputDecoration(fillColor: Colors.black12, filled: true),
                   obscureText: true,
                   onChanged: (val) {
-
+                    setState(() => password = val);
                   },
                 ),
                 Container(
@@ -43,7 +53,7 @@ class Login extends StatelessWidget {
                             'Zaloguj się'
                         ),
                         onPressed: () {
-                          Navigator.pushNamed(context, '/home');
+
                         },
                       ),
                       SizedBox(height: 30.0),

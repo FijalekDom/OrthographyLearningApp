@@ -80,7 +80,7 @@ class RegisterState extends State<Register> {
                         RaisedButton(
                           color: Colors.lightGreen[400],
                           child: Text(
-                              'Zaloguj się'
+                              'Zarejestruj się'
                           ),
                           onPressed: () async {
                             if(formKey.currentState.validate()) {
@@ -88,16 +88,6 @@ class RegisterState extends State<Register> {
                             }
                           },
                         ),
-                        SizedBox(height: 30.0),
-                        RaisedButton(
-                          color: Colors.lightGreen[400],
-                          child: Text(
-                              'Rejestracja'
-                          ),
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/register');
-                          },
-                        )
                       ],
                     ),
                   )

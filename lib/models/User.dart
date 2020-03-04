@@ -22,4 +22,6 @@ class User {
     'password': password,
     'token': token,
   };
+
+
 }

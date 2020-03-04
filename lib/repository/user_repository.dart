@@ -5,8 +5,9 @@ class UserRepository {
 
   Future<User> getUser(String login, String password)
   async {
+    await DBProvider.db.initDB();
     final db = await DBProvider.db.database;
-    var result = await db.rawQuery('SELECT * FROM User WHERE login = ? AND password = ?', [login, password]);
+    var result = await db.rawQuery('SELECT * FROM User WHERE email = ? AND password = ?', [login, password]);
     return result.isNotEmpty ? User.fromMap(result.first) : Null;
   }
 }

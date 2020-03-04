@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:orthography_learning_app/models/User.dart';
+import 'package:orthography_learning_app/repository/user_repository.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -11,6 +13,7 @@ class LoginState extends State<Login> {
 
   String email = '';
   String password = '';
+  String error = '';
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -59,7 +62,12 @@ class LoginState extends State<Login> {
                         ),
                         onPressed: () async {
                           if(formKey.currentState.validate()) {
-                            print(email);
+                            User user = await UserRepository().getUser(email, password);
+                            if(loginActionValidator(user)) {
+                              Navigator.pushNamed(context, '/home');
+                            } else {
+                              setState(() => error = 'Nie udało się zalogować');
+                            }
                           }
                         },
                       ),
@@ -82,5 +90,16 @@ class LoginState extends State<Login> {
       ),
       backgroundColor: Colors.white,
     );
+  }
+
+  bool loginActionValidator(User user) {
+    if(user != Null) {
+      if(user.token != '') {
+        return true;
+      }
+    } else {
+      return false;
+    }
+    return false;
   }
 }

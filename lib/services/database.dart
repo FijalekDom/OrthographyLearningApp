@@ -1,5 +1,6 @@
 import 'dart:io' show Directory;
 import 'package:orthography_learning_app/models/Test.dart';
+import 'package:orthography_learning_app/models/User.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,21 +22,22 @@ class DBProvider {
     Directory documentsDirectory = await
     getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, "OrthographyLearningDB.db");
-    return await openDatabase(
+    return openDatabase(
         path, version: 1,
         onOpen: (db) {},
         onCreate: (Database db, int version) async {
+          await db.execute("CREATE TABLE IF NOT EXISTS Test ("
+              "testId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+              "requiredPoints INTEGER NOT NULL,"
+              "testType TEXT NOT NULL)"
+          );
+
           await db.execute("CREATE TABLE IF NOT EXISTS User ("
               "userId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
               "name TEXT NOT NULL,"
               "email TEXT NOT NULL,"
               "password TEXT NOT NULL,"
               "token TEXT NOT NULL)"
-          );
-          await db.execute("CREATE TABLE IF NOT EXISTS Test ("
-              "testId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-              "requiredPoints INTEGER NOT NULL,"
-              "testType TEXT NOT NULL)"
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS Word ("
@@ -94,6 +96,12 @@ class DBProvider {
                   "values (?, ?, ?)",
               [2, 10, "rz_z"]
           );
+
+          await db.execute(
+              "INSERT INTO User ('userId', 'name', 'email', password, token)"
+                  "values (?, ?, ?, ?, ?)",
+              [1, 'user1', 'aa@bb.pl', "aaaaa", "aaabbb"]
+          );
         }
     );
   }
@@ -110,5 +118,4 @@ class DBProvider {
     });
     return tests;
   }
-
 }

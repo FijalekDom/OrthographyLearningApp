@@ -1,6 +1,5 @@
 import 'dart:io' show Directory;
 import 'package:orthography_learning_app/models/Test.dart';
-import 'package:orthography_learning_app/models/User.dart';
 import 'dart:async';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';

@@ -63,10 +63,11 @@ class LoginState extends State<Login> {
                         onPressed: () async {
                           if(formKey.currentState.validate()) {
                             User user = await UserRepository().getUser(email, password);
-                            if(loginActionValidator(user)) {
+                            String loginErrorMessage = loginActionValidator(user);
+                            if(loginErrorMessage == "") {
                               Navigator.pushNamed(context, '/home');
                             } else {
-                              setState(() => error = 'Nie udało się zalogować');
+                              setState(() => error = loginErrorMessage);
                             }
                           }
                         },
@@ -80,10 +81,15 @@ class LoginState extends State<Login> {
                         onPressed: () {
                           Navigator.pushNamed(context, '/register');
                         },
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
+                SizedBox(height: 30.0),
+                      Text(
+                        error,
+                        style: TextStyle(color: Colors.red),
+                      )
               ]
           ),
         ),
@@ -92,14 +98,16 @@ class LoginState extends State<Login> {
     );
   }
 
-  bool loginActionValidator(User user) {
-    if(user != Null) {
+  String loginActionValidator(User user) {
+    if(user != null) {
       if(user.token != '') {
-        return true;
+        return "";
+      } else {
+        return "Błąd logowania";
       }
     } else {
-      return false;
+      return "Niepoprawny login lub hasło";
     }
-    return false;
   }
+  
 }

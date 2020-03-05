@@ -7,7 +7,12 @@ class UserRepository {
   async {
     await DBProvider.db.initDB();
     final db = await DBProvider.db.database;
-    var result = await db.rawQuery('SELECT * FROM User WHERE email = ? AND password = ?', [login, password]);
-    return result.isNotEmpty ? User.fromMap(result.first) : Null;
+    try {
+      var result = await db.rawQuery('SELECT * FROM User WHERE email = ? AND password = ?', [login, password]);
+      return result.isNotEmpty ? User.fromMap(result.first) : Null;
+    } catch (e) {
+      print(e);
+    }
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -84,7 +85,16 @@ class RegisterState extends State<Register> {
                           ),
                           onPressed: () async {
                             if(formKey.currentState.validate()) {
-                              print(email);
+                              String url = 'https://orthography-app.herokuapp.com/rest/register';
+                              Map<String, String> headers = {"Content-type": "application/json"};
+                              String json = '{ "userName": "'+ login + '", ' +
+                                  '"email": "'+ email + '", ' +
+                                  '"password": "'+ password + '"}';
+                              print(json);
+                              Response response = await post(url,
+                                  headers: headers,
+                                  body: json);
+                              print(response.body);
                             }
                           },
                         ),

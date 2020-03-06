@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:http/http.dart';
 import 'package:orthography_learning_app/models/User.dart';
 import 'package:orthography_learning_app/repository/user_repository.dart';
 
@@ -62,13 +65,22 @@ class LoginState extends State<Login> {
                         ),
                         onPressed: () async {
                           if(formKey.currentState.validate()) {
-                            User user = await UserRepository().getUser(email, password);
+                            /*User user = await UserRepository().getUser(email, password);
                             String loginErrorMessage = loginActionValidator(user);
                             if(loginErrorMessage == "") {
                               Navigator.pushNamed(context, '/home');
                             } else {
                               setState(() => error = loginErrorMessage);
-                            }
+                            }*/
+                            String url = 'https://orthography-app.herokuapp.com/rest/login';
+                            Map<String, String> headers = {"Content-type": "application/json"};
+                            String json = '{ "email": "'+ email + '",'+
+                                '"password": "'+ password + '"}';
+                            print(json);
+                            Response response = await post(url,
+                              headers: headers,
+                              body: json);
+                            print(response.body);
                           }
                         },
                       ),

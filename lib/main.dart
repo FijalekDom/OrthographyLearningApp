@@ -31,13 +31,13 @@ Future<void> main() async {
 }
 
 Future<bool> connectionTest() async {
-    try {
+  try {
       final result = await InternetAddress.lookup('https://orthography-app.herokuapp.com/');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
-    }
+      }
     } on SocketException catch (_) {
       return false;
     }
-    return false;
-  }
+  return false;
+}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:orthography_learning_app/models/Test.dart';
-import 'package:orthography_learning_app/services/database.dart';
+import 'package:orthography_learning_app/repository/test_repository.dart';
 
 class TestsList extends StatelessWidget {
   @override
@@ -12,7 +12,7 @@ class TestsList extends StatelessWidget {
         backgroundColor: Colors.lightGreen,
       ),
       body: FutureBuilder<List<Test>>(
-        future: DBProvider.db.getAllTests(),
+        future: TestRepository().getAllTests(),
         builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(

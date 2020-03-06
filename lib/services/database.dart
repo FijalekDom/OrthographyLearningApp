@@ -105,16 +105,7 @@ class DBProvider {
     );
   }
 
-  Future<List<Test>> getAllTests() async {
-    final db = await database;
-    List<Map> results = await db.query(
-        "Test", columns: Test.columns,
-    );
-    List<Test> tests = new List();
-    results.forEach((result) {
-      Test test = Test.fromMap(result);
-      tests.add(test);
-    });
-    return tests;
+  Database getDb() {
+    return _database;
   }
 }

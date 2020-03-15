@@ -35,7 +35,7 @@ class DBProvider {
               "name TEXT NOT NULL,"
               "email TEXT NOT NULL,"
               "password TEXT NOT NULL,"
-              "token TEXT NOT NULL)"
+              "token TEXT)"
           );
 
           await db.execute("DELETE FROM user;"

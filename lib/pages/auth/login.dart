@@ -22,8 +22,20 @@ class LoginState extends State<Login> {
   final formKey = GlobalKey<FormState>();
 
   @override
-  Widget build(BuildContext context) {
+  initState() {
+    super.initState();
+    UserRepository().getUserWithToken().then((user) {
+      if(user != null) {
+        CurrentUser.currentUser.setCurrentUser(user);
+        Navigator.of(context).pushNamed('/home');
+      }
+      setState(() {});
+    });
 
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Logowanie'),
@@ -143,7 +155,6 @@ class LoginState extends State<Login> {
 
   Future<User> setUserStatus(User user) async {
     User loginUser = await UserRepository().getUserByEmail(user.email);
-    print(user.email);
     if(loginUser  == null) {
       UserRepository().addUser(user).then((isSet) async {
         print("dodaje usera");

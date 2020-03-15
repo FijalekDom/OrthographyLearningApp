@@ -12,9 +12,12 @@ class Home extends StatelessWidget {
         actions: <Widget>[
           new IconButton(icon: new Icon(Icons.power_settings_new),
             onPressed: () async {
-              User user = await UserRepository().getUserWithToken();
-              UserRepository().deleteUserToken(user);
-              Navigator.pushNamedAndRemoveUntil(context, "/login", (r) => false);
+              UserRepository().deleteUserToken(CurrentUser.currentUser.getCurrentUser()).then((isDeleted) {
+                if(isDeleted) {
+                  CurrentUser.currentUser.deleteCurrentUser();
+                  Navigator.pushNamedAndRemoveUntil(context, "/login", (r) => false);
+                }
+              });
             },
           ),
         ],
@@ -25,7 +28,7 @@ class Home extends StatelessWidget {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget> [
-              Text("Witaj"+CurrentUser.currentUser.getCurrentUser().name),
+              Text("Witaj " + CurrentUser.currentUser.getCurrentUser().name),
               RaisedButton(
                 child: Text("Ćwiczenia"),
                 onPressed: () {

@@ -20,4 +20,8 @@ class CurrentUser {
   User getCurrentUser() {
     return _user;
   }
+
+  void deleteCurrentUser() {
+    _user = null;
+  }
 }

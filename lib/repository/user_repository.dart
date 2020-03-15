@@ -16,18 +16,6 @@ class UserRepository {
     }
   }
 
-  Future<bool> isUserWithToken()
-  async {
-    DBProvider.db.getDb();
-    final db = await DBProvider.db.database;
-    try {
-      var result = await db.rawQuery('SELECT * FROM User WHERE token IS NOT NULL');
-      return result.isNotEmpty ? true : false;
-    } catch (e) {
-      return false;
-    }
-  }
-
   Future<User> getUserByEmail(String email)
   async {
     DBProvider.db.getDb();
@@ -46,7 +34,7 @@ class UserRepository {
     String hash = Password.hash(user.password, new PBKDF2());
     final db = await DBProvider.db.database;
     try {
-      await db.rawQuery("INSERT INTO User ('name', 'email', 'password', 'token')"
+      await db.rawQuery("INSERT INTO User ('name', 'email', 'password', 'token') "
                   "values (?, ?, ?, ?)",
               [user.name, user.email, hash, user.token]);
       return true;
@@ -60,10 +48,11 @@ class UserRepository {
     DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {
-      await db.rawQuery("UPDATE User SET token = ''"
-                  "WHERE name=?, email=?", [user.name, user.email]);
+      await db.rawQuery("UPDATE User SET token = null "
+                  "WHERE email = ?", [user.email]);
       return true;
     } catch (e) {
+      print(e);
       return false;
     }
   }
@@ -72,7 +61,7 @@ class UserRepository {
     DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {
-      await db.rawQuery("UPDATE User SET token = ?"
+      await db.rawQuery("UPDATE User SET token = ? "
                   "WHERE email=?", [user.token, user.email]);
       return true;
     } catch (e) {

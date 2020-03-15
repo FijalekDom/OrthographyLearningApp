@@ -1,18 +1,83 @@
 import 'package:orthography_learning_app/services/database.dart';
 import 'package:orthography_learning_app/models/User.dart';
+import 'package:password/password.dart';
 
 class UserRepository {
 
-  Future<User> getUser(String login, String password)
+  Future<User> getUserWithToken()
   async {
-    await DBProvider.db.initDB();
+    DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {
-      var result = await db.rawQuery('SELECT * FROM User WHERE email = ? AND password = ?', [login, password]);
+      var result = await db.rawQuery('SELECT * FROM User WHERE token IS NOT NULL');
+      return result.isNotEmpty ? User.fromMap(result.first) : Null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> isUserWithToken()
+  async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      var result = await db.rawQuery('SELECT * FROM User WHERE token IS NOT NULL');
+      return result.isNotEmpty ? true : false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<User> getUserByEmail(String email)
+  async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      var result = await db.rawQuery('SELECT * FROM User WHERE email = ?', [email]);
       return result.isNotEmpty ? User.fromMap(result.first) : Null;
     } catch (e) {
       print(e);
+      return null;
     }
-    return null;
+  }
+
+  Future<bool> addUser(User user) async {
+    DBProvider.db.getDb();
+    String hash = Password.hash(user.password, new PBKDF2());
+    final db = await DBProvider.db.database;
+    try {
+      await db.rawQuery("INSERT INTO User ('name', 'email', 'password', 'token')"
+                  "values (?, ?, ?, ?)",
+              [user.name, user.email, hash, user.token]);
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  Future<bool> deleteUserToken(User user) async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      await db.rawQuery("UPDATE User SET token = ''"
+                  "WHERE name=?, email=?", [user.name, user.email]);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> setUserToken(User user) async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      await db.rawQuery("UPDATE User SET token = ?"
+                  "WHERE email=?", [user.token, user.email]);
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 }

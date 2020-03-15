@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:orthography_learning_app/models/User.dart';
+import 'package:orthography_learning_app/pages/auth/current_user.dart';
+import 'package:orthography_learning_app/repository/user_repository.dart';
 
 class Home extends StatelessWidget {
   @override
@@ -6,6 +9,15 @@ class Home extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Ortografia'),
+        actions: <Widget>[
+          new IconButton(icon: new Icon(Icons.power_settings_new),
+            onPressed: () async {
+              User user = await UserRepository().getUserWithToken();
+              UserRepository().deleteUserToken(user);
+              Navigator.pushNamedAndRemoveUntil(context, "/login", (r) => false);
+            },
+          ),
+        ],
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
@@ -13,6 +25,7 @@ class Home extends StatelessWidget {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget> [
+              Text("Witaj"+CurrentUser.currentUser.getCurrentUser().name),
               RaisedButton(
                 child: Text("Ćwiczenia"),
                 onPressed: () {

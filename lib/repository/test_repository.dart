@@ -1,6 +1,5 @@
 import 'package:orthography_learning_app/models/Test.dart';
 import 'package:orthography_learning_app/services/database.dart';
-import 'package:orthography_learning_app/models/User.dart';
 
 class TestRepository {
 

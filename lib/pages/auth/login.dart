@@ -1,15 +1,17 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:http/http.dart';
+import 'dart:convert' as JSON;
 import 'package:orthography_learning_app/models/User.dart';
+import 'package:orthography_learning_app/pages/auth/current_user.dart';
 import 'package:orthography_learning_app/repository/user_repository.dart';
+import 'package:orthography_learning_app/services/api_conncection.dart';
 
 class Login extends StatefulWidget {
+
+
   @override
   State<StatefulWidget> createState() => LoginState();
-
 }
 
 class LoginState extends State<Login> {
@@ -21,6 +23,7 @@ class LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Logowanie'),
@@ -64,23 +67,20 @@ class LoginState extends State<Login> {
                             'Zaloguj się'
                         ),
                         onPressed: () async {
-                          if(formKey.currentState.validate()) {
-                            /*User user = await UserRepository().getUser(email, password);
-                            String loginErrorMessage = loginActionValidator(user);
+                          bool isInternetConnection = await ApiConnection().connectionTest();
+                          if(!isInternetConnection) {
+                            setState(() => error = "Brak połączenia z siecią");
+                          } else {
+                            setState(() => error = "");
+                            if(formKey.currentState.validate()) {
+                            print("loguje");
+                            String loginErrorMessage = await loginAction();
                             if(loginErrorMessage == "") {
-                              Navigator.pushNamed(context, '/home');
+                              Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
                             } else {
                               setState(() => error = loginErrorMessage);
-                            }*/
-                            String url = 'https://orthography-app.herokuapp.com/rest/login';
-                            Map<String, String> headers = {"Content-type": "application/json"};
-                            String json = '{ "email": "'+ email + '",'+
-                                '"password": "'+ password + '"}';
-                            print(json);
-                            Response response = await post(url,
-                              headers: headers,
-                              body: json);
-                            print(response.body);
+                            }
+                          }
                           }
                         },
                       ),
@@ -110,16 +110,57 @@ class LoginState extends State<Login> {
     );
   }
 
-  String loginActionValidator(User user) {
-    if(user != null) {
-      if(user.token != '') {
+  Future<String> loginAction() async {
+    String url = 'https://orthography-app.herokuapp.com/rest/login';
+    Map<String, String> headers = {"Content-type": "application/json"};
+    String json = '{ "email": "'+ email + '",' + '"password": "'+ password + '"}';
+    Response response = await post(url, headers: headers, body: json);
+    if(response.statusCode == 200) {
+      Map<String, dynamic> jsonData = JSON.jsonDecode(response.body);
+      
+      User loginUser = new User(
+        name: jsonData['user'], 
+        email: email,
+        password: password,
+        token: jsonData['token']);
+      loginUser = await setUserStatus(loginUser);
+      if(loginUser != null) {
+        CurrentUser.currentUser.setCurrentUser(loginUser);
+        print("usawtiono usera na:");
+        print(loginUser.toString());
         return "";
       } else {
-        return "Błąd logowania";
+        return "Wystąpił błąd podczas zapisu !!!";
       }
     } else {
-      return "Niepoprawny login lub hasło";
+      if(response.statusCode == 500) {
+        return "Wystąpił błąd !!!";
+      } else {
+        return "Nieprawidłowy login/hasło";
+      }
     }
   }
-  
+
+  Future<User> setUserStatus(User user) async {
+    User loginUser = await UserRepository().getUserByEmail(user.email);
+    print(user.email);
+    if(loginUser  == null) {
+      UserRepository().addUser(user).then((isSet) async {
+        print("dodaje usera");
+        if(isSet) {
+          return await UserRepository().getUserByEmail(user.email);
+        } else {
+          return null;
+        }
+      });
+    } else {
+      print("ustawiam token");
+      bool tokenChnaged = await UserRepository().setUserToken(user);
+        if(tokenChnaged) {
+          return await UserRepository().getUserByEmail(user.email);
+        } else {
+          return null;
+        }
+    }
+  }
 }

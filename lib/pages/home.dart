@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:orthography_learning_app/models/User.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
 import 'package:orthography_learning_app/repository/user_repository.dart';
 

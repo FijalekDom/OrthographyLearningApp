@@ -1,8 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
-import 'package:orthography_learning_app/models/User.dart';
-import 'package:orthography_learning_app/repository/user_repository.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -17,6 +16,7 @@ class RegisterState extends State<Register> {
   String password = '';
   String confirmPassword = '';
   String error ='';
+  bool isWaiting = false;
 
   final formKey = GlobalKey<FormState>();
 
@@ -28,8 +28,12 @@ class RegisterState extends State<Register> {
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
-      body: SingleChildScrollView(
-              child: Container(
+      body: isWaiting 
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+      :SingleChildScrollView(
+        child: Container(
           padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
           child: Form(
             key: formKey,
@@ -87,20 +91,27 @@ class RegisterState extends State<Register> {
                               'Zarejestruj się'
                           ),
                           onPressed: () async {
-                            if(formKey.currentState.validate()) {
-                              String errorMessage = validateTheSamePasswords();
-                              setState(() => error = errorMessage);
-                              if(errorMessage == '') {
-                                print("dodaje");
-                                if(await registerAction()) {
-                                  print("dodano");
+                            if(formKey.currentState.validate() && validateTheSamePasswords()) {
+                                setState(() => isWaiting = true);
+                                String errorMessage = await registerAction();
+                                setState(() => isWaiting = false);
+                                if(errorMessage == '') {
+                                  print("zrobione");
+                                  return Alert(
+                                    context: context,
+                                    title: "Udało się !!!",
+                                    desc: "Brawo " + login + " twoje konto zostało utworzone, zaloguj się aby użyć aplikacji.",
+                                    buttons: [
+                                      DialogButton(child: Text("Przejdź do logowania"), 
+                                        onPressed: () {
+                                          Navigator.pushNamed(context, '/login');
+                                        },
+                                      )
+                                    ]
+                                  ).show();
+                                } else {
+                                  setState(() => error = errorMessage);
                                 }
-                                //User user = new User(name: login, email: email, password: password, token: "aaaa");
-                                // bool isAdded = await UserRepository().addUser(user);
-                                // if(isAdded) {
-                                // print("dodano");
-                                // }
-                              }
                             }
                           },
                         ),
@@ -122,15 +133,16 @@ class RegisterState extends State<Register> {
     );
   }
 
-  String validateTheSamePasswords() {
+  bool validateTheSamePasswords() {
     if(password == confirmPassword) {
-      return '';
+      return true;
     } else {
-      return "Hasła powinny być takie same";
+      setState(() => error = "Hasła powinny być takie same");
+      return false;
     }
   }
  
-  Future<bool> registerAction() async {
+  Future<String> registerAction() async {
     try {
       String url = 'https://orthography-app.herokuapp.com/rest/register';
       Map<String, String> headers = {"Content-type": "application/json"};
@@ -138,10 +150,15 @@ class RegisterState extends State<Register> {
                     '"email": "'+ email + '", ' +
                     '"password": "'+ password + '"}';
       Response response = await post(url, headers: headers, body: json);
-      print(response);
-      return true;
+      switch(response.statusCode) {
+        case 201: return ''; break;
+        case 400: return 'Podany adres e-mail posiada już konto !!!'; break;
+        case 500: return 'Błąd serwera'; break;
+        case 503: return 'Błąd połączenia'; break;
+        default: return 'Nieznany błąd'; break;
+      }
     } catch (e) {
-      return false;
+      return 'Wystąpił błąd !!!';
     }
   }
 

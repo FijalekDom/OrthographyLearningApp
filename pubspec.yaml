@@ -25,6 +25,8 @@ dependencies:
   http: any
   password: any
   splashscreen: any
+  progress_dialog: any
+  rflutter_alert: any
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

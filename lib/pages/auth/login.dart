@@ -148,9 +148,10 @@ class LoginState extends State<Login> {
         email: email,
         password: password,
         token: jsonData['token']);
-      loginUser = await setUserStatus(loginUser);
-      if(loginUser != null) {
-        CurrentUser.currentUser.setCurrentUser(loginUser);
+      User addedUser = await setUserStatus(loginUser);
+      print(addedUser);
+      if(addedUser != null) {
+        CurrentUser.currentUser.setCurrentUser(addedUser);
         return "";
       } else {
         return "Wystąpił błąd podczas zapisu !!!";
@@ -167,14 +168,12 @@ class LoginState extends State<Login> {
   Future<User> setUserStatus(User user) async {
     User loginUser = await UserRepository().getUserByEmail(user.email);
     if(loginUser  == null) {
-      UserRepository().addUser(user).then((isSet) async {
-        print("dodaje usera");
-        if(isSet) {
-          return await UserRepository().getUserByEmail(user.email);
-        } else {
-          return null;
-        }
-      });
+      bool added = await UserRepository().addUser(user);
+      if(added) {
+        return user;
+      } else {
+        return null;
+      }
     } else {
       print("ustawiam token");
       bool tokenChnaged = await UserRepository().setUserToken(user);

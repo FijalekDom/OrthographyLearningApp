@@ -1,3 +1,4 @@
+import 'package:encrypt/encrypt.dart';
 import 'package:orthography_learning_app/services/database.dart';
 import 'package:orthography_learning_app/models/User.dart';
 import 'package:password/password.dart';
@@ -31,12 +32,12 @@ class UserRepository {
 
   Future<bool> addUser(User user) async {
     DBProvider.db.getDb();
-    String hash = Password.hash(user.password, new PBKDF2());
+
     final db = await DBProvider.db.database;
     try {
       await db.rawQuery("INSERT INTO User ('userId', 'name', 'email', 'password', 'token') "
                   "values (?, ?, ?, ?, ?)",
-              [user.userId, user.name, user.email, hash, user.token]);
+              [user.userId, user.name, user.email, user.password, user.token]);
       return true;
     } catch (e) {
       print(e);

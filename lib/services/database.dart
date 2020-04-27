@@ -38,17 +38,14 @@ class DBProvider {
               "token TEXT)"
           );
 
-          await db.execute("DELETE FROM user;"
-          );
-
           await db.execute("CREATE TABLE IF NOT EXISTS Word ("
               "wordId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
               "exerciseType TEXT NOT NULL)"
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS Exercise ("
-              "exercisedId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-              "word TEXT NOT NULL)"
+              "exerciseId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+              "exerciseType TEXT NOT NULL)"
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS UserTests ("
@@ -87,16 +84,6 @@ class DBProvider {
               ")"
           );
 
-          await db.execute(
-              "INSERT INTO Test ('testId', 'requiredPoints', 'testType')"
-              "values (?, ?, ?)",
-              [1, 10, "ou"]
-          );
-          await db.execute(
-              "INSERT INTO Test ('testId', 'requiredPoints', 'testType')"
-                  "values (?, ?, ?)",
-              [2, 10, "rz_z"]
-          );
         }
     );
   }

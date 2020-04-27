@@ -8,7 +8,7 @@ class User {
   User({this.userId, this.name, this.email, this.password, this.token});
 
   factory User.fromMap(Map<String, dynamic> json) => new User(
-      userId: json["testId"],
+      userId: json["userId"],
       name: json["name"],
       email: json["email"],
       password: json["password"],

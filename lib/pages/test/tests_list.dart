@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:orthography_learning_app/models/Test.dart';
+import 'package:orthography_learning_app/models/UserTests.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
 import 'package:orthography_learning_app/repository/test_repository.dart';
 import 'package:orthography_learning_app/repository/user_tests_repository.dart';
@@ -52,7 +53,15 @@ class TestsList extends StatelessWidget {
                                   'Wybierz'
                               ),
                           onPressed: () {
-
+                            int userId = CurrentUser.currentUser.getCurrentUser().userId;
+                            UserTests userTest = new UserTests(
+                              idUserTest: 1,
+                              points: 4,
+                              date: new DateTime(2020, 5, 4, 15, 0, 0),
+                              idUser: userId,
+                              idTest: 1
+                            );
+                            UserTestsRepository().addUserTest(userTest);
                           },
                         ),
                       )
@@ -122,7 +131,7 @@ class TestsList extends StatelessWidget {
   }
 
   Future<bool> downloadTestsList() async {
-    Response downloadResponse = await ApiConnection().downloadExercisesListFromServer();
+    Response downloadResponse = await ApiConnection().downloadTestListFromServer();
     print(downloadResponse.statusCode);
     if(downloadResponse.statusCode == 200) {
       List<dynamic> jsonData = JSON.jsonDecode(downloadResponse.body);
@@ -155,11 +164,12 @@ class TestsList extends StatelessWidget {
   bool addTestsToDatabase(List<dynamic> jsonData) {
     try{
       Test test;
+      print(jsonData);
       jsonData.forEach((data) {
-      test = new Test(testId: data["id"], requiredPoints: data["requiredPoints"], testType: data["testType"]);
-      TestRepository().addTest(test);
-      return true;
-    });
+        test = new Test(testId: data["id"], requiredPoints: data["requiredPoints"], testType: data["testType"]);
+        TestRepository().addTest(test);
+        return true;
+      });
     } catch (e) {
       print(e);
       return false;

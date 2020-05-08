@@ -5,8 +5,7 @@ import 'package:password/password.dart';
 
 class UserRepository {
 
-  Future<User> getUserWithToken()
-  async {
+  Future<User> getUserWithToken() async {
     DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {
@@ -17,8 +16,7 @@ class UserRepository {
     }
   }
 
-  Future<User> getUserByEmail(String email)
-  async {
+  Future<User> getUserByEmail(String email) async {
     DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {

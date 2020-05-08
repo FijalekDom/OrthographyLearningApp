@@ -51,7 +51,7 @@ class DBProvider {
           await db.execute("CREATE TABLE IF NOT EXISTS UserTests ("
               "userTestId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
               "points INTEGER NOT NULL,"
-              "date TEXT NOT NULL,"
+              "date DATETIME NOT NULL,"
               "userId INTEGER NOT NULL,"
               "testId INTEGER NOT NULL,"
               "FOREIGN KEY (userId) REFERENCES Users (userId)"

@@ -24,7 +24,7 @@ class TestRepository {
     DBProvider.db.getDb();
     final db = await DBProvider.db.database;
     try {
-      await db.rawQuery("INSERT INTO Exercise ('exerciseId', 'requiredPoints', 'exerciseType') "
+      await db.rawQuery("INSERT INTO Test ('testId', 'requiredPoints', 'testType') "
                   "values (?, ?, ?)",
               [test.testId, test.requiredPoints, test.testType]);
       return true;

@@ -93,7 +93,6 @@ class LoginState extends State<Login> {
                             } else {
                               setState(() => error = "");
                               if(formKey.currentState.validate()) {
-                                print("loguje");
                                 setState(() => isWaiting = true);
                                 String loginErrorMessage = await loginAction();
                                 if(loginErrorMessage == "") {

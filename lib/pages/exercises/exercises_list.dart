@@ -23,9 +23,8 @@ class ExercisesList extends StatelessWidget {
       body: FutureBuilder<List<Exercise>>(
         future: ExerciseRepository().getAllExercises(),
         builder: (BuildContext context, AsyncSnapshot<List<Exercise>> snapshot) {
-          print(snapshot);
-          if(snapshot != null) {
-            if (snapshot.hasData) {
+          if (snapshot.hasData) {
+            if(snapshot.data.length != 0) {
               return ListView.builder(
                 itemCount: snapshot.data.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -33,13 +32,14 @@ class ExercisesList extends StatelessWidget {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Expanded(child: Text(getTypeName(item.exerciseType.toString()))),
+                      Expanded(child: Text(getTypeName(item.exerciseType
+                          .toString()))),
                       Expanded(
                         child: RaisedButton(
                           color: Colors.lightGreen[400],
                           child: Text(
-                                  'Wybierz'
-                              ),
+                              'Wybierz'
+                          ),
                           onPressed: () {
 
                           },
@@ -50,51 +50,74 @@ class ExercisesList extends StatelessWidget {
                 },
               );
             } else {
-              print("kreci sie");
               ApiConnection().connectionTest().then((isConnection) {
-                print(isConnection);
-                if(isConnection) {
-                  print("pobieranie");
+                if (isConnection) {
                   downloadExercisesListFromApi().then((dataDownloaded) {
-                    print("pobierano " + dataDownloaded.toString());
-                    if(dataDownloaded) {
-                        Navigator.pushNamed(context, "/exercises");
+                    if (dataDownloaded) {
+                      Navigator.pushNamed(context, "/exercises");
                     } else {
-                      return Alert(
-                    context: context,
-                    title: "Wystąpił błąd",
-                    buttons: [
-                      DialogButton(
-                        child: Text("Powrót"), 
-                        onPressed: () {
-                                          
-                        },
-                      )
-                    ]
-                  ).show();
+                      Alert(
+                          context: context,
+                          title: "Wystąpił błąd",
+                          buttons: [
+                            DialogButton(
+                              child: Text("Powrót do menu"),
+                              onPressed: () {
+                                Navigator.pushNamed(context, "/home");
+                              },
+                            )
+                          ]
+                      ).show();
                     }
                   });
                 } else {
-                  return Alert(
-                    context: context,
-                    title: "Brak połączenia",
-                    desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
-                    buttons: [
-                      DialogButton(
-                        child: Text("Sprawdź ponownie"), 
-                        onPressed: () {
-                                          
-                        },
-                      )
-                    ]
+                  Alert(
+                      context: context,
+                      title: "Brak połączenia",
+                      desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
+                      buttons: [
+                        DialogButton(
+                          child: Text("Sprawdź ponownie"),
+                          onPressed: () {
+                            Navigator.pushNamed(context, "/exercises");
+                          },
+                        )
+                      ]
                   ).show();
                 }
               });
             }
+          } else if (snapshot.hasError) {
+            Alert(
+                context: context,
+                title: "Brak połączenia",
+                desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
+                buttons: [
+                  DialogButton(
+                    child: Text("Sprawdź ponownie"),
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/home");
+                    },
+                  )
+                ]
+            ).show();
           } else {
-            print("brak danych");
+            return ListView(
+              children: <Widget>[
+                SizedBox(
+                  child: CircularProgressIndicator(),
+                  width: 60,
+                  height: 60,
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Text('Awaiting result...'),
+                )
+              ],
+            );
           }
-        },
+          return ListView();
+        }
       ),
       backgroundColor: Colors.blue,
     );
@@ -113,24 +136,20 @@ class ExercisesList extends StatelessWidget {
 
   Future<bool> downloadExercisesListFromApi() async {
     Response downloadResponse = await ApiConnection().downloadExercisesListFromServer();
-    print(downloadResponse.statusCode);
     if(downloadResponse.statusCode == 200) {
       List<dynamic> jsonData = JSON.jsonDecode(downloadResponse.body);
 
-      bool result = addExercisesToDatabase(jsonData);
+      bool result = await addExercisesToDatabase(jsonData);
       return result;
     } else {
-      print("logowanie ponowne");
       if(downloadResponse.statusCode == 401) {
         Response loginResponse = await ApiConnection().loginToCurrentUser();
-        print("logowanie " + loginResponse.statusCode.toString());
         if(loginResponse.statusCode == 200) {
           Map<String, dynamic> jsonData = JSON.jsonDecode(loginResponse.body);
           CurrentUser.currentUser.getCurrentUser().token = jsonData['token'];
           downloadResponse = await ApiConnection().downloadExercisesListFromServer();
           if(downloadResponse.statusCode == 200) {
-              bool result = addExercisesToDatabase(JSON.jsonDecode(downloadResponse.body));
-              print("dodano");
+              bool result = await addExercisesToDatabase(JSON.jsonDecode(downloadResponse.body));
               return result;
           } else {
             return false;
@@ -142,14 +161,15 @@ class ExercisesList extends StatelessWidget {
     }
   }
 
-  bool addExercisesToDatabase(List<dynamic> jsonData) {
+  Future<bool> addExercisesToDatabase(List<dynamic> jsonData) async {
+    bool added = false;
     try{
       Exercise exercise;
-    jsonData.forEach((data) {
-      exercise = new Exercise(exerciseId: data["id"], exerciseType: data["exerciseType"]);
-      ExerciseRepository().addExercise(exercise);
-      return true;
-    });
+      jsonData.forEach((data) async {
+        exercise = new Exercise(exerciseId: data["id"], exerciseType: data["exerciseType"]);
+        added = await ExerciseRepository().addExercise(exercise);
+      });
+      return added;
     } catch (e) {
       print(e);
       return false;

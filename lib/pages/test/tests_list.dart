@@ -9,14 +9,29 @@ import 'package:orthography_learning_app/services/api_conncection.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as JSON;
 
-class TestsList extends StatelessWidget {
+class TestsList extends StatefulWidget {
+
+
+  @override
+  State<StatefulWidget> createState() => TestsListState();
+}
+
+class TestsListState extends State<TestsList> {
+
+  int points = 0;
+
+  @override
+  initState() {
+    super.initState();
+    int currentUserId = CurrentUser.currentUser.getCurrentUser().userId;
+    UserTestsRepository().getUserPoints(currentUserId).then((pointsCount) {
+      setState(() => points = pointsCount);
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
-    int currentUserId = CurrentUser.currentUser.getCurrentUser().userId;
-    int points = 0;
-    UserTestsRepository().getUserPoints(currentUserId).then((pointsCount) {
-      points = pointsCount;
-    });
 
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +39,7 @@ class TestsList extends StatelessWidget {
           children: <Widget>[
             Text("Lista testów"),
             Text("Twoje zgromadzone punkty: " + points.toString(),
-                style: TextStyle(fontSize: 15.0),
+              style: TextStyle(fontSize: 15.0),
             )
           ],
         ),
@@ -32,88 +47,112 @@ class TestsList extends StatelessWidget {
         backgroundColor: Colors.lightGreen,
       ),
       body: FutureBuilder<List<Test>>(
-        future: TestRepository().getAllTests(),
-        builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
-          if(snapshot != null) {
+          future: TestRepository().getAllTests(),
+          builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
             if (snapshot.hasData) {
-              return ListView.builder(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Test item = snapshot.data[index];
-                  print("wyswietlam");
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(child: Text(getTypeName(item.testType.toString()))),
-                      Expanded(child: Text(item.requiredPoints.toString())),
-                      Expanded(
-                        child: RaisedButton(
-                          color: Colors.lightGreen[400],
-                          child: Text(
-                                  'Wybierz'
-                              ),
-                          onPressed: () {
-                            int userId = CurrentUser.currentUser.getCurrentUser().userId;
-                            UserTests userTest = new UserTests(
-                              idUserTest: 1,
-                              points: 4,
-                              date: new DateTime(2020, 5, 4, 15, 0, 0),
-                              idUser: userId,
-                              idTest: 1
-                            );
-                            UserTestsRepository().addUserTest(userTest);
-                          },
-                        ),
-                      )
-                    ],
-                  );
-                },
-              );
-            } else {
-              print("kreci sie");
-              ApiConnection().connectionTest().then((isConnection) {
-                if(isConnection) {
-                  print("pobieranie");
-                  downloadTestsList().then((dataDownloaded) {
-                    print("pobierano " + dataDownloaded.toString());
-                    if(dataDownloaded) {
+              if(snapshot.data.length != 0) {
+                return ListView.builder(
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Test item = snapshot.data[index];
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(child: Text(getTypeName(item.testType.toString()))),
+                        Expanded(child: Text(item.requiredPoints.toString())),
+                        Expanded(
+                          child: RaisedButton(
+                            color: Colors.lightGreen[400],
+                            child: Text(
+                                'Wybierz'
+                            ),
+                            onPressed: () {
+                              int userId = CurrentUser.currentUser
+                                  .getCurrentUser()
+                                  .userId;
+                              UserTests userTest = new UserTests(
+                                  idUserTest: 1,
+                                  points: 4,
+                                  date: new DateTime(2020, 5, 4, 15, 0, 0),
+                                  idUser: userId,
+                                  idTest: 1
+                              );
+                              UserTestsRepository().addUserTest(userTest);
+                            },
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                );
+              } else {
+                ApiConnection().connectionTest().then((isConnection) {
+                  if (isConnection) {
+                    downloadTestsList().then((dataDownloaded) {
+                      if (dataDownloaded) {
                         Navigator.pushNamed(context, "/tests");
-                    } else {
-                      return Alert(
-                    context: context,
-                    title: "Wystąpił błąd",
-                    buttons: [
-                      DialogButton(
-                        child: Text("Powrót"), 
-                        onPressed: () {
-                                          
-                        },
-                      )
-                    ]
-                  ).show();
-                    }
-                  });
-                } else {
-                  return Alert(
-                    context: context,
-                    title: "Brak połączenia",
-                    desc: "W celu pobrania listy testów wymagane jest połączenie z internetem",
-                    buttons: [
-                      DialogButton(
-                        child: Text("Sprawdź ponownie"), 
-                        onPressed: () {
-                                          
-                        },
-                      )
-                    ]
-                  ).show();
-                }
-              });
+                      } else {
+                        Alert(
+                            context: context,
+                            title: "Wystąpił błąd",
+                            buttons: [
+                              DialogButton(
+                                child: Text("Powrót do menu"),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, "/home");
+                                },
+                              )
+                            ]
+                        ).show();
+                      }
+                    });
+                  } else {
+                    Alert(
+                        context: context,
+                        title: "Brak połączenia",
+                        desc: "W celu pobrania listy testów wymagane jest połączenie z internetem",
+                        buttons: [
+                          DialogButton(
+                            child: Text("Sprawdź ponownie"),
+                            onPressed: () {
+                              Navigator.pushNamed(context, "/tests");
+                            },
+                          )
+                        ]
+                    ).show();
+                  }
+                });
+              }
+            } else if (snapshot.hasError) {
+              Alert(
+                  context: context,
+                  title: "Wystąpił błąd",
+                  buttons: [
+                    DialogButton(
+                      child: Text("Powrót do menu"),
+                      onPressed: () {
+                        Navigator.pushNamed(context, "/home");
+                      },
+                    )
+                  ]
+              ).show();
+            } else {
+              return ListView(
+                children: <Widget>[
+                  SizedBox(
+                    child: CircularProgressIndicator(),
+                    width: 60,
+                    height: 60,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Text('Awaiting result...'),
+                  )
+                ],
+              );
             }
-          } else {
-            print("brak danych");
+            return ListView();
           }
-        },
       ),
       backgroundColor: Colors.blue,
     );
@@ -121,36 +160,33 @@ class TestsList extends StatelessWidget {
 
   String getTypeName(String typeName) {
     switch(typeName) {
-      case 'ou' : return "U lub Ó - Łatwy";
-      case 'ou' : return "U lub Ó - Trudny";
-      case 'rz_z' : return "RZ lub Ż  - Łatwy";
-      case 'rz_z' : return "RZ lub Ż  - Trudny";
-      case 'ch_h' : return "CH lub H  - Łatwy";
-      case 'ch_h' : return "CH lub H  - Trudny";
+      case 'TYPE_O_U_LEVEL_1' : return "U lub Ó - Łatwy";
+      case 'TYPE_O_U_LEVEL_2' : return "U lub Ó - Trudny";
+      case 'TYPE_Z_RZ_LEVEL_1' : return "RZ lub Ż  - Łatwy";
+      case 'TYPE_Z_RZ_LEVEL_2' : return "RZ lub Ż  - Trudny";
+      case 'TYPE_H_CH_LEVEL_1' : return "CH lub H  - Łatwy";
+      case 'TYPE_H_CH_LEVEL_2' : return "CH lub H  - Trudny";
+      default: return 'nieznany'; break;
     }
   }
 
   Future<bool> downloadTestsList() async {
     Response downloadResponse = await ApiConnection().downloadTestListFromServer();
-    print(downloadResponse.statusCode);
     if(downloadResponse.statusCode == 200) {
       List<dynamic> jsonData = JSON.jsonDecode(downloadResponse.body);
 
-      bool result = addTestsToDatabase(jsonData);
+      bool result = await addTestsToDatabase(jsonData);
       return result;
     } else {
-      print("logowanie ponowne");
       if(downloadResponse.statusCode == 401) {
         Response loginResponse = await ApiConnection().loginToCurrentUser();
-        print("logowanie " + loginResponse.statusCode.toString());
         if(loginResponse.statusCode == 200) {
           Map<String, dynamic> jsonData = JSON.jsonDecode(loginResponse.body);
           CurrentUser.currentUser.getCurrentUser().token = jsonData['token'];
-          downloadResponse = await ApiConnection().downloadExercisesListFromServer();
+          downloadResponse = await ApiConnection().downloadTestListFromServer();
           if(downloadResponse.statusCode == 200) {
-              bool result = addTestsToDatabase(JSON.jsonDecode(downloadResponse.body));
-              print("dodano");
-              return result;
+            bool result = await addTestsToDatabase(JSON.jsonDecode(downloadResponse.body));
+            return result;
           } else {
             return false;
           }
@@ -161,15 +197,15 @@ class TestsList extends StatelessWidget {
     }
   }
 
-  bool addTestsToDatabase(List<dynamic> jsonData) {
+  Future<bool> addTestsToDatabase(List<dynamic> jsonData) async {
+    bool isAdded = false;
     try{
       Test test;
-      print(jsonData);
-      jsonData.forEach((data) {
+      jsonData.forEach((data) async {
         test = new Test(testId: data["id"], requiredPoints: data["requiredPoints"], testType: data["testType"]);
-        TestRepository().addTest(test);
-        return true;
+        isAdded = await TestRepository().addTest(test);
       });
+      return isAdded;
     } catch (e) {
       print(e);
       return false;

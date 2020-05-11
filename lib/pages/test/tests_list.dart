@@ -59,12 +59,18 @@ class TestsListState extends State<TestsList> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Expanded(child: Text(getTypeName(item.testType.toString()))),
-                        Expanded(child: Text(item.requiredPoints.toString())),
+                        Expanded(child: Text('Potrzeba ' + item.requiredPoints.toString() + ' pkt.')),
                         Expanded(
-                          child: RaisedButton(
+                          child: points < item.requiredPoints
+                          ? IconButton(
+                            icon: Icon(Icons.lock),
+                            color: Colors.white,
+                            onPressed: () {},
+                            )
+                          : RaisedButton(
                             color: Colors.lightGreen[400],
                             child: Text(
-                                'Wybierz'
+                                 'Wybierz'
                             ),
                             onPressed: () {
                               int userId = CurrentUser.currentUser

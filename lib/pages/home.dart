@@ -58,7 +58,9 @@ class HomeState extends State<Home> {
       ),
       body: isWaiting
           ? Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.lightGreen
+            ),
           )
           :Container(
         child: Center(

@@ -11,7 +11,6 @@ import 'dart:convert' as JSON;
 
 class TestsList extends StatefulWidget {
 
-
   @override
   State<StatefulWidget> createState() => TestsListState();
 }
@@ -19,15 +18,24 @@ class TestsList extends StatefulWidget {
 class TestsListState extends State<TestsList> {
 
   int points = 0;
+  bool isWaiting = true;
 
   @override
   initState() {
     super.initState();
+    setState(() => isWaiting = true);
     int currentUserId = CurrentUser.currentUser.getCurrentUser().userId;
     UserTestsRepository().getUserPoints(currentUserId).then((pointsCount) {
       setState(() => points = pointsCount);
     });
 
+    TestRepository().getAllTests().then((tests) {
+      if(tests.length == 0) {
+        downloadTests();
+      } else {
+        setState(() => isWaiting = false);
+      }
+    });
   }
 
   @override
@@ -46,7 +54,13 @@ class TestsListState extends State<TestsList> {
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
-      body: FutureBuilder<List<Test>>(
+      body: isWaiting
+          ? Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.lightGreen,
+            ),
+          )
+          : FutureBuilder<List<Test>>(
           future: TestRepository().getAllTests(),
           builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
             if (snapshot.hasData) {
@@ -92,42 +106,11 @@ class TestsListState extends State<TestsList> {
                   },
                 );
               } else {
-                ApiConnection().connectionTest().then((isConnection) {
-                  if (isConnection) {
-                    downloadTestsList().then((dataDownloaded) {
-                      if (dataDownloaded) {
-                        Navigator.pushNamed(context, "/tests");
-                      } else {
-                        Alert(
-                            context: context,
-                            title: "Wystąpił błąd",
-                            buttons: [
-                              DialogButton(
-                                child: Text("Powrót do menu"),
-                                onPressed: () {
-                                  Navigator.pushNamed(context, "/home");
-                                },
-                              )
-                            ]
-                        ).show();
-                      }
-                    });
-                  } else {
-                    Alert(
-                        context: context,
-                        title: "Brak połączenia",
-                        desc: "W celu pobrania listy testów wymagane jest połączenie z internetem",
-                        buttons: [
-                          DialogButton(
-                            child: Text("Sprawdź ponownie"),
-                            onPressed: () {
-                              Navigator.pushNamed(context, "/tests");
-                            },
-                          )
-                        ]
-                    ).show();
-                  }
-                });
+                Center(
+                  child: Text(
+                    'Brak danych'
+                  )
+                );
               }
             } else if (snapshot.hasError) {
               Alert(
@@ -143,18 +126,10 @@ class TestsListState extends State<TestsList> {
                   ]
               ).show();
             } else {
-              return ListView(
-                children: <Widget>[
-                  SizedBox(
-                    child: CircularProgressIndicator(),
-                    width: 60,
-                    height: 60,
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 16),
-                    child: Text('Awaiting result...'),
-                  )
-                ],
+              return Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.lightGreen,
+                ),
               );
             }
             return ListView();
@@ -163,6 +138,45 @@ class TestsListState extends State<TestsList> {
       backgroundColor: Colors.blue,
     );
   }
+
+  Future downloadTests() async {
+    print("pobieram");
+    bool isConnection = await ApiConnection().connectionTest();
+    if (isConnection) {
+      bool dataDownloaded = await downloadTestsList();
+      if (dataDownloaded) {
+        setState(() => isWaiting = false);
+      } else {
+        Alert(
+          context: context,
+          title: "Wystąpił błąd",
+          buttons: [
+            DialogButton(
+              child: Text("Powrót do menu"),
+              onPressed: () {
+                Navigator.pushNamed(context, "/home");
+              },
+            )
+          ]
+        ).show();
+      }
+    } else {
+      Alert(
+        context: context,
+        title: "Brak połączenia",
+        desc: "W celu pobrania listy testów wymagane jest połączenie z internetem",
+        buttons: [
+          DialogButton(
+            child: Text("Sprawdź ponownie"),
+            onPressed: () {
+              Navigator.pushNamed(context, "/tests");
+            },
+          )
+        ]
+      ).show();
+    }
+  }
+
 
   String getTypeName(String typeName) {
     switch(typeName) {
@@ -204,13 +218,15 @@ class TestsListState extends State<TestsList> {
   }
 
   Future<bool> addTestsToDatabase(List<dynamic> jsonData) async {
+    print("dodaje");
     bool isAdded = false;
     try{
       Test test;
-      jsonData.forEach((data) async {
+      for(dynamic data in jsonData) {
         test = new Test(testId: data["id"], requiredPoints: data["requiredPoints"], testType: data["testType"]);
         isAdded = await TestRepository().addTest(test);
-      });
+      }
+
       return isAdded;
     } catch (e) {
       print(e);

@@ -7,7 +7,30 @@ import 'package:orthography_learning_app/services/api_conncection.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as JSON;
 
-class ExercisesList extends StatelessWidget {
+class ExercisesList extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() => ExercisesListState();
+}
+
+class ExercisesListState extends State<ExercisesList> {
+
+  bool isWaiting = true;
+
+  @override
+  initState() {
+    super.initState();
+    setState(() => isWaiting = true);
+
+    ExerciseRepository().getAllExercises().then((tests) {
+      if(tests.length == 0) {
+        downloadExercises();
+      } else {
+        setState(() => isWaiting = false);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,107 +43,111 @@ class ExercisesList extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.lightGreen,
       ),
-      body: FutureBuilder<List<Exercise>>(
-        future: ExerciseRepository().getAllExercises(),
-        builder: (BuildContext context, AsyncSnapshot<List<Exercise>> snapshot) {
-          if (snapshot.hasData) {
-            if(snapshot.data.length != 0) {
-              return ListView.builder(
-                itemCount: snapshot.data.length,
-                itemBuilder: (BuildContext context, int index) {
-                  Exercise item = snapshot.data[index];
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(child: Text(getTypeName(item.exerciseType
-                          .toString()))),
-                      Expanded(
-                        child: RaisedButton(
-                          color: Colors.lightGreen[400],
-                          child: Text(
-                              'Wybierz'
-                          ),
-                          onPressed: () {
+      body: isWaiting
+          ? Center(
+            child: CircularProgressIndicator(
+              backgroundColor: Colors.lightGreen,
+            ),
+          )
+          :FutureBuilder<List<Exercise>>(
+          future: ExerciseRepository().getAllExercises(),
+          builder: (BuildContext context, AsyncSnapshot<List<Exercise>> snapshot) {
+            if (snapshot.hasData) {
+              if(snapshot.data.length != 0) {
+                return ListView.builder(
+                  itemCount: snapshot.data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    Exercise item = snapshot.data[index];
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(child: Text(getTypeName(item.exerciseType
+                            .toString()))),
+                        Expanded(
+                          child: RaisedButton(
+                            color: Colors.lightGreen[400],
+                            child: Text(
+                                'Wybierz'
+                            ),
+                            onPressed: () {
 
-                          },
-                        ),
-                      )
-                    ],
-                  );
-                },
-              );
-            } else {
-              ApiConnection().connectionTest().then((isConnection) {
-                if (isConnection) {
-                  downloadExercisesListFromApi().then((dataDownloaded) {
-                    if (dataDownloaded) {
-                      Navigator.pushNamed(context, "/exercises");
-                    } else {
-                      Alert(
-                          context: context,
-                          title: "Wystąpił błąd",
-                          buttons: [
-                            DialogButton(
-                              child: Text("Powrót do menu"),
-                              onPressed: () {
-                                Navigator.pushNamed(context, "/home");
-                              },
-                            )
-                          ]
-                      ).show();
-                    }
-                  });
-                } else {
-                  Alert(
-                      context: context,
-                      title: "Brak połączenia",
-                      desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
-                      buttons: [
-                        DialogButton(
-                          child: Text("Sprawdź ponownie"),
-                          onPressed: () {
-                            Navigator.pushNamed(context, "/exercises");
-                          },
+                            },
+                          ),
                         )
-                      ]
-                  ).show();
-                }
-              });
+                      ],
+                    );
+                  },
+                );
+              } else {
+                Center(
+                    child: Text(
+                        'Brak danych'
+                    )
+                );
+              }
+            } else if (snapshot.hasError) {
+              Alert(
+                  context: context,
+                  title: "Brak połączenia",
+                  desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
+                  buttons: [
+                    DialogButton(
+                      child: Text("Sprawdź ponownie"),
+                      onPressed: () {
+                        Navigator.pushNamed(context, "/home");
+                      },
+                    )
+                  ]
+              ).show();
+            } else {
+              return Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.lightGreen,
+                ),
+              );
             }
-          } else if (snapshot.hasError) {
+            return ListView();
+          }
+      ),
+      backgroundColor: Colors.blue,
+    );
+  }
+
+  Future downloadExercises() async {
+    bool isConnection = await ApiConnection().connectionTest();
+      if (isConnection) {
+        bool dataDownloaded = await downloadExercisesListFromApi();
+          if (dataDownloaded) {
+            setState(() => isWaiting = false);
+          } else {
             Alert(
                 context: context,
-                title: "Brak połączenia",
-                desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
+                title: "Wystąpił błąd",
                 buttons: [
                   DialogButton(
-                    child: Text("Sprawdź ponownie"),
+                    child: Text("Powrót do menu"),
                     onPressed: () {
                       Navigator.pushNamed(context, "/home");
                     },
                   )
                 ]
             ).show();
-          } else {
-            return ListView(
-              children: <Widget>[
-                SizedBox(
-                  child: CircularProgressIndicator(),
-                  width: 60,
-                  height: 60,
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Awaiting result...'),
-                )
-              ],
-            );
           }
-          return ListView();
-        }
-      ),
-      backgroundColor: Colors.blue,
-    );
+      } else {
+        Alert(
+            context: context,
+            title: "Brak połączenia",
+            desc: "W celu pobrania listy ćwiczeń wymagane jest połączenie z internetem",
+            buttons: [
+              DialogButton(
+                child: Text("Sprawdź ponownie"),
+                onPressed: () {
+                  Navigator.pushNamed(context, "/exercises");
+                },
+              )
+            ]
+        ).show();
+      }
   }
 
   String getTypeName(String typeName) {
@@ -149,8 +176,8 @@ class ExercisesList extends StatelessWidget {
           CurrentUser.currentUser.getCurrentUser().token = jsonData['token'];
           downloadResponse = await ApiConnection().downloadExercisesListFromServer();
           if(downloadResponse.statusCode == 200) {
-              bool result = await addExercisesToDatabase(JSON.jsonDecode(downloadResponse.body));
-              return result;
+            bool result = await addExercisesToDatabase(JSON.jsonDecode(downloadResponse.body));
+            return result;
           } else {
             return false;
           }
@@ -165,14 +192,15 @@ class ExercisesList extends StatelessWidget {
     bool added = false;
     try{
       Exercise exercise;
-      jsonData.forEach((data) async {
+      for(dynamic data in jsonData) {
         exercise = new Exercise(exerciseId: data["id"], exerciseType: data["exerciseType"]);
         added = await ExerciseRepository().addExercise(exercise);
-      });
+      }
       return added;
     } catch (e) {
       print(e);
       return false;
-    } 
+    }
   }
+
 }

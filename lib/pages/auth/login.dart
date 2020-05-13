@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:http/http.dart';
 import 'dart:convert' as JSON;
-import 'package:orthography_learning_app/models/User.dart';
+import 'package:orthography_learning_app/domain/models/User.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
 import 'package:orthography_learning_app/repository/user_repository.dart';
 import 'package:orthography_learning_app/services/api_conncection.dart';

@@ -1,4 +1,4 @@
-import 'package:orthography_learning_app/models/Test.dart';
+import 'package:orthography_learning_app/domain/models/Test.dart';
 import 'package:orthography_learning_app/services/database.dart';
 
 class TestRepository {
@@ -19,6 +19,7 @@ class TestRepository {
       return null;
     }
   }
+
 
   Future<bool> addTest(Test test) async {
     DBProvider.db.getDb();

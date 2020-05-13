@@ -1,4 +1,4 @@
-import 'package:orthography_learning_app/models/User.dart';
+import 'package:orthography_learning_app/domain/models/User.dart';
 
 class CurrentUser {
   CurrentUser._();

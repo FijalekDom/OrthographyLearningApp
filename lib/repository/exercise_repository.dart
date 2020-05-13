@@ -1,4 +1,4 @@
-import 'package:orthography_learning_app/models/Exercise.dart';
+import 'package:orthography_learning_app/domain/models/Exercise.dart';
 import 'package:orthography_learning_app/services/database.dart';
 
 class ExerciseRepository {

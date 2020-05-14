@@ -87,6 +87,17 @@ class ApiConnection {
     return response;
   }
 
+  Future<Response> downloadWordsByTest(int testId) async {
+    String url = 'https://orthography-app.herokuapp.com/rest/test/getwords';
+    Map<String, String> headers = {"Content-type": "application/json"};
+    String token = CurrentUser.currentUser.getCurrentUser().token;
+    String json = '{ "token": "'+ token + '", ' +
+        '"testId": "'+ testId.toString() +
+        '"}';
+    Response response = await post(url, headers: headers, body: json);
+    return response;
+  }
+
   String parseDateToApiDate(DateTime date) {
     String formattedDate = date.toIso8601String();
 

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:orthography_learning_app/domain/aggregate/TestWithDownloadedWords.dart';
 import 'package:orthography_learning_app/domain/models/Test.dart';
 import 'package:orthography_learning_app/domain/models/UserTests.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
+import 'package:orthography_learning_app/repository/Test_words_repository.dart';
 import 'package:orthography_learning_app/repository/test_repository.dart';
+import 'package:orthography_learning_app/repository/test_repository.dart' as prefix0;
 import 'package:orthography_learning_app/repository/user_tests_repository.dart';
+import 'package:orthography_learning_app/repository/word_repository.dart';
 import 'package:orthography_learning_app/services/api_conncection.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as JSON;
@@ -19,6 +23,7 @@ class TestsListState extends State<TestsList> {
 
   int points = 0;
   bool isWaiting = true;
+  bool isDownloading = false;
 
   @override
   initState() {
@@ -60,15 +65,15 @@ class TestsListState extends State<TestsList> {
               backgroundColor: Colors.lightGreen,
             ),
           )
-          : FutureBuilder<List<Test>>(
-          future: TestRepository().getAllTests(),
-          builder: (BuildContext context, AsyncSnapshot<List<Test>> snapshot) {
+          : FutureBuilder<List<TestWithDownloadedWords>>(
+          future: TestRepository().getAllTestsWithDownloadWordsInfo(),
+          builder: (BuildContext context, AsyncSnapshot<List<TestWithDownloadedWords>> snapshot) {
             if (snapshot.hasData) {
               if(snapshot.data.length != 0) {
                 return ListView.builder(
                   itemCount: snapshot.data.length,
                   itemBuilder: (BuildContext context, int index) {
-                    Test item = snapshot.data[index];
+                    TestWithDownloadedWords item = snapshot.data[index];
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -81,25 +86,33 @@ class TestsListState extends State<TestsList> {
                             color: Colors.white,
                             onPressed: () {},
                             )
-                          : RaisedButton(
-                            color: Colors.lightGreen[400],
-                            child: Text(
-                                 'Wybierz'
-                            ),
-                            onPressed: () {
-                              int userId = CurrentUser.currentUser
-                                  .getCurrentUser()
-                                  .userId;
-                              UserTests userTest = new UserTests(
-                                  idUserTest: 1,
-                                  points: 4,
-                                  date: new DateTime(2020, 5, 4, 15, 0, 0),
-                                  idUser: userId,
-                                  idTest: 1
-                              );
-                              UserTestsRepository().addUserTest(userTest);
-                            },
-                          ),
+                          : item.count > 0
+                              ? RaisedButton(
+                                color: Colors.lightGreen[400],
+                                child: Text(
+                                    'Wybierz'
+                                ),
+                                onPressed: () {
+
+                                },
+                              )
+                              : RaisedButton(
+                                color: Colors.lightGreen[400],
+                                child: isDownloading
+                                ? CircularProgressIndicator()
+                                : Text(
+                                    'Pobierz słowa'
+                                ),
+                                onPressed: () {
+                                  setState(() => isDownloading = true);
+                                  downloadWordsListByTest(item.testId).then((isAdded) {
+                                    setState(() => isDownloading = false);
+                                    if(isAdded) {
+                                      Navigator.pushNamed(context, "/tests");
+                                    }
+                                  });
+                                },
+                              ),
                         )
                       ],
                     );
@@ -140,7 +153,6 @@ class TestsListState extends State<TestsList> {
   }
 
   Future downloadTests() async {
-    print("pobieram");
     bool isConnection = await ApiConnection().connectionTest();
     if (isConnection) {
       bool dataDownloaded = await downloadTestsList();
@@ -218,7 +230,6 @@ class TestsListState extends State<TestsList> {
   }
 
   Future<bool> addTestsToDatabase(List<dynamic> jsonData) async {
-    print("dodaje");
     bool isAdded = false;
     try{
       Test test;
@@ -232,5 +243,65 @@ class TestsListState extends State<TestsList> {
       print(e);
       return false;
     }
+  }
+
+  Future<bool> downloadWordsListByTest(int testId) async {
+    Response response = await ApiConnection().downloadWordsByTest(testId);
+    if(response.statusCode == 200) {
+      List<dynamic> words = JSON.jsonDecode(response.body);
+      bool wordsAdded = await addWordsToDatabase(words, testId);
+
+      return wordsAdded;
+    } else {
+      if(response.statusCode == 401) {
+        Response loginResponse = await ApiConnection().loginToCurrentUser();
+        if(loginResponse.statusCode == 200) {
+          Response response = await ApiConnection().downloadWordsByTest(testId);
+          if(response.statusCode == 200) {
+            List<dynamic> words = JSON.jsonDecode(response.body);
+            bool wordsAdded = await addWordsToDatabase(words, testId);
+
+            return wordsAdded;
+          } else {
+            showErrorAlert();
+          }
+        } else {
+          showErrorAlert();
+        }
+      } else {
+        showErrorAlert();
+      }
+    }
+    return false;
+   }
+
+
+  Future<bool> addWordsToDatabase(List<dynamic> words, int testId) async {
+    try {
+      for(String word in words) {
+        WordRepository().addWord(word);
+        int id = await WordRepository().getWordIdByName(word);
+        TestWordsRepository().addTestWordsFromList(testId, id);
+      }
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  void showErrorAlert() {
+    Alert(
+        context: context,
+        title: "Wystąpił błąd",
+        buttons: [
+          DialogButton(
+            child: Text("Powrót do menu"),
+            onPressed: () {
+              Navigator.pushNamed(context, "/home");
+            },
+          )
+        ]
+    ).show();
   }
 }

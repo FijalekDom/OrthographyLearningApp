@@ -40,7 +40,7 @@ class DBProvider {
 
           await db.execute("CREATE TABLE IF NOT EXISTS Word ("
               "wordId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
-              "exerciseType TEXT NOT NULL)"
+              "word TEXT NOT NULL UNIQUE)"
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS Exercise ("
@@ -69,17 +69,17 @@ class DBProvider {
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS TestWords ("
-              "exercisedId INTEGER NOT NULL,"
               "testId INTEGER NOT NULL,"
-              "FOREIGN KEY (exercisedId) REFERENCES Exercise (exercisedId)"
+              "wordId INTEGER NOT NULL,"
               "FOREIGN KEY (testId) REFERENCES Test (testId)"
+              "FOREIGN KEY (wordId) REFERENCES Word (wordId)"
               ")"
           );
 
           await db.execute("CREATE TABLE IF NOT EXISTS ExerciseWords ("
-              "exercisedId INTEGER NOT NULL,"
+              "exerciseId INTEGER NOT NULL,"
               "wordId INTEGER NOT NULL,"
-              "FOREIGN KEY (exercisedId) REFERENCES Exercise (exercisedId)"
+              "FOREIGN KEY (exerciseId) REFERENCES Exercise (exerciseId)"
               "FOREIGN KEY (wordId) REFERENCES Word (wordId)"
               ")"
           );

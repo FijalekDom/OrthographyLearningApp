@@ -1,3 +1,4 @@
+import 'package:orthography_learning_app/domain/aggregate/ExerciseWithDownloadedWords.dart';
 import 'package:orthography_learning_app/domain/models/Exercise.dart';
 import 'package:orthography_learning_app/services/database.dart';
 
@@ -17,6 +18,26 @@ class ExerciseRepository {
       return exercises;
     } catch(e) {
       print(e.toString());
+      return null;
+    }
+  }
+
+  Future<List<ExerciseWithDownloadedWords>> getAllExercisesWithDownloadWordsInfo() async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      List<Map> results = await db.rawQuery('SELECT Exercise.exerciseId, Exercise.exerciseType, COUNT(wordId) as count '
+          'FROM Exercise '
+          'LEFT JOIN ExerciseWords ON Exercise.exerciseId = ExerciseWords.exerciseId '
+          'GROUP BY Exercise.exerciseId');
+      List<ExerciseWithDownloadedWords> exercises = new List();
+      results.forEach((result) {
+        ExerciseWithDownloadedWords exercise = ExerciseWithDownloadedWords.fromMap(result);
+        exercises.add(exercise);
+      });
+      return exercises;
+    } catch (e) {
+      print(e);
       return null;
     }
   }

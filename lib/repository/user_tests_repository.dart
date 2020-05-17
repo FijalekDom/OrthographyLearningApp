@@ -24,7 +24,7 @@ class UserTestsRepository {
     final db = await DBProvider.db.database;
 
     try {
-      var result = await db.rawQuery("SELECT COUNT(points) as points FROM UserTests "
+      var result = await db.rawQuery("SELECT SUM(points) as points FROM UserTests "
                   "WHERE userId = ?",
                   [userId]);
       print(result);

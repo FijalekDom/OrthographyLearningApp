@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:orthography_learning_app/domain/aggregate/TestWithDownloadedWords.dart';
 import 'package:orthography_learning_app/domain/models/Test.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
+import 'package:orthography_learning_app/pages/test/test.dart';
 import 'package:orthography_learning_app/repository/test_words_repository.dart';
 import 'package:orthography_learning_app/repository/test_repository.dart';
 import 'package:orthography_learning_app/repository/user_tests_repository.dart';
@@ -91,8 +94,13 @@ class TestsListState extends State<TestsList> {
                                     'Wybierz'
                                 ),
                                 onPressed: () {
-
-                                },
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => TestPage(testId: item.testId, testType: item.testType),
+                                    ),
+                                  );
+                                 },
                               )
                               : RaisedButton(
                                 color: Colors.lightGreen[400],
@@ -246,7 +254,8 @@ class TestsListState extends State<TestsList> {
   Future<bool> downloadWordsListByTest(int testId) async {
     Response response = await ApiConnection().downloadWordsByTest(testId);
     if(response.statusCode == 200) {
-      List<dynamic> words = JSON.jsonDecode(response.body);
+      String body = utf8.decode(response.bodyBytes);
+      List<dynamic> words = JSON.jsonDecode(body);
       bool wordsAdded = await addWordsToDatabase(words, testId);
 
       return wordsAdded;
@@ -256,7 +265,8 @@ class TestsListState extends State<TestsList> {
         if(loginResponse.statusCode == 200) {
           Response response = await ApiConnection().downloadWordsByTest(testId);
           if(response.statusCode == 200) {
-            List<dynamic> words = JSON.jsonDecode(response.body);
+            String body = utf8.decode(response.bodyBytes);
+            List<dynamic> words = JSON.jsonDecode(body);
             bool wordsAdded = await addWordsToDatabase(words, testId);
 
             return wordsAdded;

@@ -49,4 +49,24 @@ class WordRepository {
     }
   }
 
+  Future<List<Word>> getWordsListByExercise(int exerciseId) async {
+    DBProvider.db.getDb();
+    final db = await DBProvider.db.database;
+    try {
+      List<Map> results = await db.rawQuery("SELECT Word.wordId, Word.word "
+          "FROM Word "
+          "LEFT JOIN ExerciseWords ON Word.wordId = ExerciseWords.wordId "
+          "WHERE ExerciseWords.exerciseId = ?", [exerciseId]);
+      List<Word> words = new List();
+      results.forEach((result) {
+        Word test = Word.fromMap(result);
+        words.add(test);
+      });
+      return words.isNotEmpty ? words : null;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
 }

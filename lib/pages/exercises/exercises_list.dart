@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:orthography_learning_app/domain/aggregate/ExerciseWithDownloadedWords.dart';
 import 'package:orthography_learning_app/domain/models/Exercise.dart';
 import 'package:orthography_learning_app/pages/auth/current_user.dart';
+import 'package:orthography_learning_app/pages/exercises/exercise.dart';
 import 'package:orthography_learning_app/repository/exercise_repository.dart';
 import 'package:orthography_learning_app/repository/exercise_words_repository.dart';
 import 'package:orthography_learning_app/repository/word_repository.dart';
@@ -75,7 +78,12 @@ class ExercisesListState extends State<ExercisesList> {
                                 'Wybierz'
                             ),
                             onPressed: () {
-
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ExercisePage(exerciseId: item.exerciseId, exerciseType: item.exerciseType),
+                                ),
+                              );
                             },
                           )
                               : RaisedButton(
@@ -228,7 +236,8 @@ class ExercisesListState extends State<ExercisesList> {
   Future<bool> downloadWordsListByExercise(int exerciseId) async {
     Response response = await ApiConnection().downloadWordsByExercise(exerciseId);
     if(response.statusCode == 200) {
-      List<dynamic> words = JSON.jsonDecode(response.body);
+      String body = utf8.decode(response.bodyBytes);
+      List<dynamic> words = JSON.jsonDecode(body);
       bool wordsAdded = await addWordsToDatabase(words, exerciseId);
 
       return wordsAdded;
@@ -238,7 +247,8 @@ class ExercisesListState extends State<ExercisesList> {
         if(loginResponse.statusCode == 200) {
           Response response = await ApiConnection().downloadWordsByExercise(exerciseId);
           if(response.statusCode == 200) {
-            List<dynamic> words = JSON.jsonDecode(response.body);
+            String body = utf8.decode(response.bodyBytes);
+            List<dynamic> words = JSON.jsonDecode(body);
             bool wordsAdded = await addWordsToDatabase(words, exerciseId);
 
             return wordsAdded;

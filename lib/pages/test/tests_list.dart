@@ -32,7 +32,9 @@ class TestsListState extends State<TestsList> {
     setState(() => isWaiting = true);
     int currentUserId = CurrentUser.currentUser.getCurrentUser().userId;
     UserTestsRepository().getUserPoints(currentUserId).then((pointsCount) {
-      setState(() => points = pointsCount);
+      if(pointsCount != null) {
+        setState(() => points = pointsCount);
+      }
     });
 
     TestRepository().getAllTests().then((tests) {

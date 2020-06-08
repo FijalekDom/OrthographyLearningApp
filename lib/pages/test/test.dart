@@ -100,20 +100,24 @@ class TestPageState extends State<TestPage> {
                                 color: Colors.lightGreen[400],
                                 child: Text(leftSign),
                                 onPressed: () {
-                                  checkAnswer(
-                                      wordsList[index].word,
-                                      cutSignFromWord(wordsList[index].word),
-                                      'left');
+                                  if(isAnswerGood == null) {
+                                    checkAnswer(
+                                        wordsList[index].word,
+                                        cutSignFromWord(wordsList[index].word),
+                                        'left');
+                                  }
                                 },
                               ),
                               RaisedButton(
                                 color: Colors.lightGreen[400],
                                 child: Text(rightSign),
                                 onPressed: () {
-                                  checkAnswer(
-                                      wordsList[index].word,
-                                      cutSignFromWord(wordsList[index].word),
-                                      'right');
+                                  if(isAnswerGood == null) {
+                                    checkAnswer(
+                                        wordsList[index].word,
+                                        cutSignFromWord(wordsList[index].word),
+                                        'right');
+                                  }
                                 },
                               )
                             ],
@@ -135,11 +139,15 @@ class TestPageState extends State<TestPage> {
                                               ),
                                               onPressed: () {},
                                             ))
-                                        : new IconButton(
-                                            icon: new Icon(Icons.close,
-                                                color: Colors.red),
-                                            onPressed: () async {},
-                                          )
+                                        : Container(
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Color(0xFFe0f2f1)),
+                                            child: new IconButton(
+                                              icon: new Icon(Icons.close,
+                                                  color: Colors.red),
+                                              onPressed: () async {},
+                                            ))
                                   ],
                                 )
                               : Text(''),
@@ -163,12 +171,15 @@ class TestPageState extends State<TestPage> {
                                             child: Text('Zakończ test'),
                                             onPressed: () async {
                                               setState(() => isWaiting = true);
-                                              bool dataSaved = await saveTestData();
-                                              if(dataSaved) {
-                                                setState(() => isWaiting = false);
+                                              bool dataSaved =
+                                                  await saveTestData();
+                                              if (dataSaved) {
+                                                setState(
+                                                    () => isWaiting = false);
                                                 dataSavedAlert();
                                               } else {
-                                                setState(() => isWaiting = false );
+                                                setState(
+                                                    () => isWaiting = false);
                                                 errorDataSaveAlert();
                                               }
                                             },
@@ -270,16 +281,21 @@ class TestPageState extends State<TestPage> {
 
   Future<bool> saveTestData() async {
     int userId = CurrentUser.currentUser.getCurrentUser().userId;
-    UserTests test = new UserTests(idUserTest: 0, points: this.countCorrect, date: new DateTime.now(), idUser: userId, idTest: testId);
+    UserTests test = new UserTests(
+        idUserTest: 0,
+        points: this.countCorrect,
+        date: new DateTime.now(),
+        idUser: userId,
+        idTest: testId);
     bool dataAdded = await UserTestsRepository().addUserTest(test);
     ApiConnection().connectionTest().then((isInternetConnection) async {
       List<UserTests> tests = new List();
       tests.add(test);
       Response response = await ApiConnection().sendTestResult(tests);
-      if(response.statusCode == 400) {
+      if (response.statusCode == 400) {
         Response loginResponse = await ApiConnection().loginToCurrentUser();
 
-        if(loginResponse.statusCode == 200) {
+        if (loginResponse.statusCode == 200) {
           Response response = await ApiConnection().sendTestResult(tests);
         }
       }
@@ -296,7 +312,8 @@ class TestPageState extends State<TestPage> {
           DialogButton(
             child: Text("Testy"),
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, "/tests", (r) => false);
+              Navigator.pushNamedAndRemoveUntil(
+                  context, "/tests", (r) => false);
             },
           ),
           DialogButton(
@@ -305,22 +322,17 @@ class TestPageState extends State<TestPage> {
               Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
             },
           )
-        ]
-    ).show();
+        ]).show();
   }
 
   void errorDataSaveAlert() {
-    Alert(
-        context: context,
-        title: "Wystąpił błąd podczas zapisu",
-        buttons: [
-          DialogButton(
-            child: Text("Powrót do menu"),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
-            },
-          )
-        ]
-    ).show();
+    Alert(context: context, title: "Wystąpił błąd podczas zapisu", buttons: [
+      DialogButton(
+        child: Text("Powrót do menu"),
+        onPressed: () {
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (r) => false);
+        },
+      )
+    ]).show();
   }
 }

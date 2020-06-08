@@ -43,7 +43,7 @@ class UserTestsRepository {
     try {
       int userId = CurrentUser.currentUser.getCurrentUser().userId;
       var result = await db.rawQuery('SELECT date FROM UserTests WHERE userId = ? ORDER BY date DESC LIMIT 1', [userId]);
-      return result.isNotEmpty ? DateTime.parse(result.first["date"]) : new DateTime(2010, 1, 1, 0, 0, 0);
+      return result.isNotEmpty ? DateTime.parse(result.first["date"]) : null;
     } catch (e) {
       print(e);
       return null;

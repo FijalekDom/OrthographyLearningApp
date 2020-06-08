@@ -80,20 +80,24 @@ class ExercisePageState extends State<ExercisePage> {
                           color: Colors.lightGreen[400],
                           child: Text(leftSign),
                           onPressed: () {
-                            checkAnswer(
-                                wordsList[index],
-                                cutSignFromWord(wordsList[index].word),
-                                'left');
+                            if(isAnswerGood == null) {
+                              checkAnswer(
+                                  wordsList[index],
+                                  cutSignFromWord(wordsList[index].word),
+                                  'left');
+                            }
                           },
                         ),
                         RaisedButton(
                           color: Colors.lightGreen[400],
                           child: Text(rightSign),
                           onPressed: () {
-                            checkAnswer(
-                                wordsList[index],
-                                cutSignFromWord(wordsList[index].word),
-                                'right');
+                            if(isAnswerGood == null) {
+                              checkAnswer(
+                                  wordsList[index],
+                                  cutSignFromWord(wordsList[index].word),
+                                  'right');
+                            }
                           },
                         )
                       ],
@@ -115,11 +119,15 @@ class ExercisePageState extends State<ExercisePage> {
                               ),
                               onPressed: () {},
                             ))
-                            : new IconButton(
-                          icon: new Icon(Icons.close,
-                              color: Colors.red),
-                          onPressed: () async {},
-                        )
+                            : Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFe0f2f1)),
+                          child: new IconButton(
+                            icon: new Icon(Icons.close,
+                                color: Colors.red),
+                            onPressed: () async {},
+                          ))
                       ],
                     )
                         : Text(''),

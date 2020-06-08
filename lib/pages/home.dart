@@ -99,7 +99,7 @@ class HomeState extends State<Home> {
   Future<bool> synchronizeDataAction() async {
     String infoString = ' ';
     DateTime date = await UserTestsRepository().getLatestUserTestDate();
-    //bool isSended = await sendDataToApi("");
+
     if(date != null) {
       Response response = await ApiConnection().checkLastTestDate(date);
       infoString = await checkSynchronizationResponse(response);

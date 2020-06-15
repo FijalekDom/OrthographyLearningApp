@@ -53,6 +53,9 @@ class ExercisePageState extends State<ExercisePage> {
         CircularProgressIndicator(backgroundColor: Colors.lightGreen),
       )
           : Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage("assets/background.png"), fit: BoxFit.cover)),
         child: Center(
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -62,7 +65,7 @@ class ExercisePageState extends State<ExercisePage> {
                     Text(
                       cutSignFromWord(wordsList[index].word),
                       style: TextStyle(
-                        color: Colors.amber,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 25,
                         fontFamily: 'Kalam',
